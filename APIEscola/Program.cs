@@ -39,11 +39,10 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>(options =>
 .AddDefaultTokenProviders(); // Adiocionando o provedor de tokens padrão
 
 
-
 // Swagger com Autenticação JWT Bearer
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "LojaAPI", Version = "v1" });
+    c.SwaggerDoc("v1", new() { Title = "APIEscola", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -68,26 +67,30 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Adicionar os Serviços de Autenticação e Autorização
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
-app.UseHttpsRedirection();
+var app = builder.Build(); // Cria o aplicativo
 
-app.UseAuthorization();
+app.UseSwagger(); // Habilita o Swagger
 
-app.MapControllers();
+app.UseSwaggerUI(); // Habilita a interface do Swagger
 
-app.Run();
+app.UseHttpsRedirection(); // Redireciona requisições HTTP para HTTPS
+
+app.UseCors("AllowAll"); // Habilita o CORS
+
+app.UseAuthentication(); // Habilita a autenticação
+
+app.UseAuthorization(); // Habilita a autorização
+
+app.MapControllers(); // Mapeia os controladores
+
+app.MapGroup("/Usuario").MapIdentityApi<IdentityUser>(); // Mapeia o grupo de endpoints de autenticação
+
+app.Run(); // Executa o aplicativo
